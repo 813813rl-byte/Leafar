@@ -87,10 +87,9 @@ b{ color:#6ea8fe; }
 
 <input id="msg" placeholder="Mensagem" style="width:70%;" oninput="digitando()">
 <button onclick="enviar()">Enviar</button>
-<button onclick="limparChat()">🧼 Limpar</button>
 
 <audio id="som">
-<source src="https://www.myinstants.com/media/sounds/message-tone.mp3">
+<source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg">
 </audio>
 
 <script>
@@ -100,13 +99,25 @@ const firebaseURL =
 
 let ultimoSnapshot = "";
 
-function limparChat(){
-    document.getElementById("chat").innerHTML = "";
-}
 
 /* 🔥 SOM */
 function tocarSom(){
-    document.getElementById("som").play();
+
+    const ctx = new AudioContext();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.frequency.value = 700;
+
+    gain.gain.setValueAtTime(0.03, ctx.currentTime);
+
+    osc.start();
+
+    osc.stop(ctx.currentTime + 0.08);
 }
 
 /* ✍️ DIGITANDO */
@@ -174,11 +185,29 @@ async function atualizar(){
 
             tocarSom();
 
-            if(Notification.permission === "granted"){
-                new Notification("Nova mensagem no ChatBAT 📡");
-            }
+if(Notification.permission === "granted"){
+
+    let ultimaMensagem =
+        Object.values(dados)[Object.values(dados).length - 1];
+
+let ultimaMensagem =
+    Object.values(dados)[Object.values(dados).length - 1];
+
+let meuNome =
+    document.getElementById("nome").value;
+
+if(
+    Notification.permission === "granted" &&
+    ultimaMensagem.nome !== meuNome
+){
+
+    new Notification(
+        ultimaMensagem.nome,
+        {
+            body: ultimaMensagem.texto,
+            tag:"chatbat"
         }
-    }
+    );
 }
 
 /* 👥 ONLINE */
