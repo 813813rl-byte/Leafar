@@ -5,7 +5,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChatBAT</title>
-
+#online{
+    background:#1e1e1e;
+    border:1px solid #333;
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:10px;
+}
 <style>
 
 body{
@@ -140,8 +146,53 @@ async function atualizar(){
         chat.scrollTop = chat.scrollHeight;
     }
 }
+async function atualizarOnline(){
 
+    let nome = document.getElementById("nome").value;
+    let sala = document.getElementById("sala").value;
+
+    if(!nome || !sala) return;
+
+    await fetch(
+        `${firebaseURL}/online/${sala}/${nome}.json`,
+        {
+            method:"PUT",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(Date.now())
+        }
+    );
+
+    let resposta =
+    await fetch(
+        `${firebaseURL}/online/${sala}.json`
+    );
+
+    let dados = await resposta.json();
+
+    let lista = [];
+
+    if(dados){
+
+        let agora = Date.now();
+
+        for(let usuario in dados){
+
+            if(agora - dados[usuario] < 30000){
+
+                lista.push(usuario);
+
+            }
+        }
+    }
+
+    document.getElementById("online").innerHTML =
+        "👥 Online ("+lista.length+"): " +
+        lista.join(", ");
+}
 setInterval(atualizar,2000);
+setInterval(atualizarOnline,10000);
 
 </script>
 
