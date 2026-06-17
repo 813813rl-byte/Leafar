@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChatBAT</title>
-<div id="online"></div>
+
 <style>
 
 body{
@@ -36,7 +36,6 @@ h1{
     height:400px;
     overflow-y:auto;
     padding:10px;
-    color:white;
 }
 
 #chat div{
@@ -78,6 +77,8 @@ b{
 
 <h1>📡 ChatBAT</h1>
 
+<div id="online">👥 Online: carregando...</div>
+
 <input id="nome" placeholder="Seu nome">
 <input id="sala" placeholder="Sala" value="amigos">
 
@@ -103,20 +104,15 @@ async function enviar(){
 
     if(!nome || !texto) return;
 
-    await fetch(
-        `${firebaseURL}/salas/${sala}.json`,
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                nome:nome,
-                texto:texto,
-                hora:new Date().toLocaleTimeString()
-            })
-        }
-    );
+    await fetch(`${firebaseURL}/salas/${sala}.json`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({
+            nome:nome,
+            texto:texto,
+            hora:new Date().toLocaleTimeString()
+        })
+    });
 
     document.getElementById("msg").value="";
 }
@@ -124,30 +120,24 @@ async function enviar(){
 async function atualizar(){
 
     let sala = document.getElementById("sala").value;
-
     if(!sala) return;
 
-    let resposta =
-    await fetch(`${firebaseURL}/salas/${sala}.json`);
-
+    let resposta = await fetch(`${firebaseURL}/salas/${sala}.json`);
     let dados = await resposta.json();
 
     let chat = document.getElementById("chat");
-
     chat.innerHTML="";
 
     if(dados){
-
         Object.values(dados).forEach(m=>{
-
             chat.innerHTML +=
             `<div>[${m.hora}] <b>${m.nome}</b>: ${m.texto}</div>`;
-
         });
 
         chat.scrollTop = chat.scrollHeight;
     }
 }
+
 async function atualizarOnline(){
 
     let nome = document.getElementById("nome").value;
@@ -155,44 +145,31 @@ async function atualizarOnline(){
 
     if(!nome || !sala) return;
 
-    await fetch(
-        `${firebaseURL}/online/${sala}/${nome}.json`,
-        {
-            method:"PUT",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify(Date.now())
-        }
-    );
+    await fetch(`${firebaseURL}/online/${sala}/${nome}.json`, {
+        method:"PUT",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(Date.now())
+    });
 
-    let resposta =
-    await fetch(
-        `${firebaseURL}/online/${sala}.json`
-    );
-
+    let resposta = await fetch(`${firebaseURL}/online/${sala}.json`);
     let dados = await resposta.json();
 
     let lista = [];
 
     if(dados){
-
         let agora = Date.now();
 
         for(let usuario in dados){
-
             if(agora - dados[usuario] < 30000){
-
                 lista.push(usuario);
-
             }
         }
     }
 
     document.getElementById("online").innerHTML =
-        "👥 Online ("+lista.length+"): " +
-        lista.join(", ");
+        "👥 Online ("+lista.length+"): " + lista.join(", ");
 }
+
 setInterval(atualizar,2000);
 setInterval(atualizarOnline,10000);
 
