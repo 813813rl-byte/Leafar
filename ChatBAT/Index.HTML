@@ -90,8 +90,13 @@ b{
 
 <input id="msg" placeholder="Mensagem" style="width:70%;">
 <button onclick="enviar()">Enviar</button>
+<button onclick="limparChat()">🧼 Limpar</button>
 
 <script>
+
+function limparChat(){
+    document.getElementById("chat").innerHTML = "";
+}
 
 const firebaseURL =
 "https://chatbat-39793-default-rtdb.firebaseio.com";
