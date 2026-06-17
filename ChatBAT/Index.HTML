@@ -181,11 +181,32 @@ async function atualizar(){
                 `<div>[${m.hora}] <b>${m.nome}</b>: ${m.texto}</div>`;
             });
 
-            chat.scrollTop = chat.scrollHeight;
-
-            tocarSom();
+chat.scrollTop = chat.scrollHeight;
 
 tocarSom();
+
+let ultimaMensagem =
+    Object.values(dados)[Object.values(dados).length - 1];
+
+let meuNome =
+    document.getElementById("nome").value;
+
+if(
+    Notification.permission === "granted" &&
+    ultimaMensagem.nome !== meuNome
+){
+    new Notification(
+        ultimaMensagem.nome,
+        {
+            body: ultimaMensagem.texto,
+            tag:"chatbat"
+        }
+    );
+}
+
+        }
+    }
+}
 
 let ultimaMensagem =
     Object.values(dados)[Object.values(dados).length - 1];
