@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Skeld RP</title>
+
+<style>
+
+html,body{
+    margin:0;
+    overflow:hidden;
+    background:#111;
+    touch-action:none;
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+    background:#0f0f0f;
+}
+
+#ui{
+    position:fixed;
+    top:10px;
+    left:10px;
+    color:white;
+    background:#0008;
+    padding:8px;
+    border-radius:8px;
+    z-index:10;
+}
+
+#sitBtn{
+    position:fixed;
+    right:20px;
+    bottom:120px;
+    width:90px;
+    height:90px;
+    border:none;
+    border-radius:50%;
+    background:#ffd54f;
+    font-size:18px;
+    display:none;
+}
+
+#joystick{
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    background:#ffffff18;
+}
+
+#stick{
+    position:absolute;
+    width:60px;
+    height:60px;
+    left:40px;
+    top:40px;
+    border-radius:50%;
+    background:#fff6;
+}
+
+</style>
+</head>
+<body>
+
+<div id="ui">
+Skeld RP<br>
+Jogador Local
+</div>
+
+<button id="sitBtn">Sentar</button>
+
+<canvas id="game"></canvas>
+
+<div id="joystick">
+    <div id="stick"></div>
+</div>
+
+<script>
+
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+}
+resize();
+window.addEventListener("resize",resize);
+
+const player={
+    x:800,
+    y:500,
+    speed:4,
+    sitting:false
+};
+
+let camera={
+    x:0,
+    y:0
+};
+
+const keys={};
+
+addEventListener("keydown",e=>{
+    keys[e.key.toLowerCase()]=true;
+});
+
+addEventListener("keyup",e=>{
+    keys[e.key.toLowerCase()]=false;
+});
+
+const chairs=[
+    {x:650,y:220},
+    {x:760,y:220},
+    {x:870,y:220},
+    {x:980,y:220}
+];
+
+function movePlayer(){
+
+    if(player.sitting) return;
+
+    let dx=0;
+    let dy=0;
+
+    if(keys["w"]||keys["arrowup"]) dy--;
+    if(keys["s"]||keys["arrowdown"]) dy++;
+    if(keys["a"]||keys["arrowleft"]) dx--;
+    if(keys["d"]||keys["arrowright"]) dx++;
+
+    player.x+=dx*player.speed;
+    player.y+=dy*player.speed;
+
+}
+
+const joy={
+    active:false,
+    dx:0,
+    dy:0
+};
+
+const joystick=document.getElementById("joystick");
+const stick=document.getElementById("stick");
+
+joystick.addEventListener("touchstart",e=>{
+    joy.active=true;
+});
+
+joystick.addEventListener("touchmove",e=>{
+
+    let rect=joystick.getBoundingClientRect();
+
+    let x=e.touches[0].clientX-rect.left-70;
+    let y=e.touches[0].clientY-rect.top-70;
+
+    let dist=Math.hypot(x,y);
+
+    if(dist>40){
+        x=x/dist*40;
+        y=y/dist*40;
+    }
+
+    stick.style.left=(40+x)+"px";
+    stick.style.top=(40+y)+"px";
+
+    joy.dx=x/40;
+    joy.dy=y/40;
+
+});
+
+joystick.addEventListener("touchend",()=>{
+
+    joy.active=false;
+    joy.dx=0;
+    joy.dy=0;
+
+    stick.style.left="40px";
+    stick.style.top="40px";
+
+});
+
+function moveJoystick(){
+
+    if(player.sitting) return;
+
+    player.x+=joy.dx*player.speed;
+    player.y+=joy.dy*player.speed;
+
+}
+
+function drawMap(){
+
+    ctx.fillStyle="#d6d6d6";
+
+    ctx.fillRect(500,100,700,300);
+
+    ctx.fillRect(780,400,140,450);
+
+    ctx.fillRect(920,650,400,150);
+
+    ctx.strokeStyle="#444";
+    ctx.lineWidth=8;
+
+    ctx.strokeRect(500,100,700,300);
+    ctx.strokeRect(780,400,140,450);
+    ctx.strokeRect(920,650,400,150);
+
+    ctx.fillStyle="#4caf50";
+
+    chairs.forEach(c=>{
+
+        ctx.beginPath();
+        ctx.arc(c.x,c.y,25,0,Math.PI*2);
+        ctx.fill();
+
+    });
+
+}
+
+function drawPlayer(){
+
+    ctx.fillStyle="#00c3ff";
+
+    ctx.beginPath();
+    ctx.arc(player.x,player.y,28,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#bff3ff";
+
+    ctx.beginPath();
+    ctx.arc(player.x+10,player.y-6,10,0,Math.PI*2);
+    ctx.fill();
+
+}
+
+function updateChairButton(){
+
+    let perto=false;
+    let cadeira=null;
+
+    chairs.forEach(c=>{
+
+        let d=Math.hypot(
+            player.x-c.x,
+            player.y-c.y
+        );
+
+        if(d<60){
+            perto=true;
+            cadeira=c;
+        }
+
+    });
+
+    const btn=document.getElementById("sitBtn");
+
+    if(perto || player.sitting){
+
+        btn.style.display="block";
+
+        btn.onclick=()=>{
+
+            if(player.sitting){
+
+                player.sitting=false;
+                return;
+
+            }
+
+            player.sitting=true;
+            player.x=cadeira.x;
+            player.y=cadeira.y;
+
+        };
+
+    }else{
+
+        btn.style.display="none";
+
+    }
+
+}
+
+function update(){
+
+    movePlayer();
+    moveJoystick();
+
+    camera.x=player.x-canvas.width/2;
+    camera.y=player.y-canvas.height/2;
+
+    updateChairButton();
+}
+
+function draw(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.save();
+
+    ctx.translate(
+        -camera.x,
+        -camera.y
+    );
+
+    drawMap();
+    drawPlayer();
+
+    ctx.restore();
+
+}
+
+function loop(){
+
+    update();
+    draw();
+
+    requestAnimationFrame(loop);
+
+}
+
+loop();
+
+</script>
+</body>
+</html>
