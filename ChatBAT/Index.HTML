@@ -183,21 +183,9 @@ async function atualizar(){
 
             chat.scrollTop = chat.scrollHeight;
 
-let ultimaMensagem =
-    Object.values(dados)[Object.values(dados).length - 1];
-let meuNome =
-    document.getElementById("nome").value;
-
-if(
-    Notification.permission === "granted" &&
-    ultimaMensagem.nome !== meuNome
-){
-    new Notification(
-        ultimaMensagem.nome,
-        {
-            body: ultimaMensagem.texto,
-            tag:"chatbat"
-        }
+            if(Notification.permission === "granted"){
+                new Notification("Nova mensagem no ChatBAT 📡");
+            }
     );
 }
 
