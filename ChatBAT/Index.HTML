@@ -1,3 +1,4 @@
+1.0
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -182,6 +183,11 @@ async function atualizar(){
             });
 
             chat.scrollTop = chat.scrollHeight;
+
+let ultimaMensagem =
+    Object.values(dados)[Object.values(dados).length - 1];
+let meuNome =
+    document.getElementById("nome").value;
 
 if(
     Notification.permission === "granted" &&
