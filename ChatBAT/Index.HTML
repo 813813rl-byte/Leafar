@@ -183,9 +183,15 @@ async function atualizar(){
 
             chat.scrollTop = chat.scrollHeight;
 
-            if(Notification.permission === "granted"){
-                new Notification("Nova mensagem no ChatBAT 📡");
-            }
+if (Notification.permission === "granted") {
+
+    const notificacao = new Notification("Nova mensagem no ChatBAT 📡", {
+        body: "Clique para abrir o chat."
+    });
+
+    notificacao.onclick = function () {
+        window.open("https://813813rl-byte.github.io/Leafar/ChatBAT/Index.HTML", "_blank");
+    };
 }
 
         } // fecha if(dados)
